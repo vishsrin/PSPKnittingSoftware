@@ -1,5 +1,5 @@
 r_cyl = 0.5; % radius of cylinder, in
-h = 10; % height of cylinder, in
+l = 10; % length of cylinder, in
 alpha = deg2rad(20); % wind angle, radians
 t_size = 1000;
 
@@ -8,7 +8,7 @@ t_size = 1000;
 %theta0 = atan(1 / zeta); % starting theta
 %theta_span = theta0:0.01:(pi / 2); % theta span vectors
 
-t = linspace(0,h,t_size);
+t = linspace(0,l,t_size);
 r = zeros(size(t));
 theta = zeros(size(t));
 z = zeros(size(t));
@@ -16,15 +16,15 @@ z = zeros(size(t));
 for i = 1:length(t)
     r(i) = r_cyl;
     theta(i) = (t(i) * pi) / (2 * r_cyl * sin(alpha));
-    z(i) = t(i);
+    x(i) = t(i);
 end
 
-x = r .* cos(theta);
-y = r .* sin(theta);
+y = r .* cos(theta);
+z = r .* sin(theta);
 
 plot3(x,y,z);
 axis equal
 hold on
-[x_cyl,y_cyl,z_cyl] = cylinder(r_cyl);
-z_cyl = z_cyl * h;
+[y_cyl,z_cyl,x_cyl] = cylinder(r_cyl);
+x_cyl = x_cyl * l;
 mesh(x_cyl,y_cyl,z_cyl);

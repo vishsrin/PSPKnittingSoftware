@@ -1,12 +1,11 @@
 %draw a cylinder
 r = 1;
-h = 10;
+h = 
 
-cyl_maker(r,h)
-
-function cyl_maker(r,h)
+function cyl = cyl_maker(r,h)
+r = 1;
 [X,Y,Z] = cylinder(r);
+h = 10;
 Z = Z * h;
 surf(X,Y,Z);
 axis equal
-end

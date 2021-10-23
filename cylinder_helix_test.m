@@ -1,6 +1,7 @@
-r_cyl = 0.5; % radius of cylinder, in
-l = 10; % length of cylinder, in
-alpha = deg2rad(20); % wind angle, radians
+draw_cyl_with_helix(3,10,45)
+
+function draw_cyl_with_helix(r_cyl,l,alpha)
+alpha = deg2rad(alpha); % wind angle, radians
 t_size = 1000;
 
 %phi0 = 0; % starting phi
@@ -28,3 +29,4 @@ hold on
 [y_cyl,z_cyl,x_cyl] = cylinder(r_cyl);
 x_cyl = x_cyl * l;
 mesh(x_cyl,y_cyl,z_cyl);
+end

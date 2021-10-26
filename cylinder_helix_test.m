@@ -1,4 +1,4 @@
-draw_cyl_with_helix(2,10,89)
+draw_cyl_with_helix(2,15,69)
 
 function draw_cyl_with_helix(r_cyl,l,alpha)
 alpha = deg2rad(alpha); % wind angle, radians

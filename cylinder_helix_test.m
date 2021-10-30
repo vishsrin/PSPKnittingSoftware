@@ -1,7 +1,7 @@
-%draw_cyl_with_helix(2,15,69)
+draw_cyl_with_helix(3, 10, 45, 0, 0.1)
+%calc_ota(3, 10, 1, 45, 0.1)
 
-
-function draw_cyl_with_helix(r_cyl,l_cyl,wind_angle)
+function draw_cyl_with_helix(r_cyl,l_cyl,wind_angle, r_boss, fiber_width)
 alpha = deg2rad(wind_angle); % wind angle, radians
 t_size = 1000;
 
@@ -13,33 +13,82 @@ t_size = 1000;
 t = linspace(0,l_cyl,t_size);
 r = zeros(size(t));
 theta = zeros(size(t));
-z = zeros(size(t));
+x = zeros(size(t));
 
-for i = 1:length(t)
+for i = 1:t_size
     r(i) = r_cyl;
     theta(i) = (t(i) * pi) / (2 * r_cyl * cot(alpha));
     x(i) = t(i);
 end
 
+r2 = zeros(2); %stores the rs needed to plot OTA line
+theta2 = zeros(2); %stores thetas needed for OTA line
+x2 = zeros(2); %stores xs for OTA
+
+%first point for OTA is last point from helix curve
+r2(1) = r_cyl;
+theta2(1) = theta(t_size);
+x2(1) = x(t_size);
+
+%second point for OTA is the first point but the theta moves forward one
+%OTA
+r2(2) = r_cyl;
+theta2(2) = theta2(1) + calc_ota(r_cyl, l_cyl, wind_angle, r_boss, fiber_width);
+x2(2) = x2(1);
+
+
 y = r .* cos(theta);
 z = r .* sin(theta);
+
+y2 = r2 .* cos(theta2);
+z2 = r2 .* sin(theta2);
+
+r3_boss = zeros(32);
+theta_boss = linspace(0, 2 * pi, 32);
+x_boss = zeros(32);
+
+r3_boss = r3_boss + r_boss;
+x_boss = x_boss + l_cyl;
+y_boss = r3_boss .* cos(theta_boss);
+z_boss = r3_boss .* sin(theta_boss);
 
 plot3(x,y,z);
 axis equal
 hold on
+plot3(x2, y2, z2);
+plot3(x_boss, y_boss, z_boss);
 [y_cyl,z_cyl,x_cyl] = cylinder(r_cyl);
 x_cyl = x_cyl * l_cyl;
 mesh(x_cyl,y_cyl,z_cyl);
 end
 
-function ota = calc_ota(r_cyl, l_cyl, r_boss, wind_angle, fiber_width)
-width_relative = acos(wind_angle) * fiber_width; %step 1: Calculate W_r
-num_fibers = 2 * pi * r_cyl / width_relative; %step 2: Calculate F
-num_fibers = ceil(num_fibers); %step 3: ceil F
-ota = 2 * acos(r_boss / r_cyl); %step 4: Initial angle guess at max possible
-fiber_step = floor((num_fibers / pi) * mod(((l_cyl * pi) / (2 * r_cyl * cot(wind_angle))), 2 * pi) + ota); %step 5: generate K value from ota guess
+function ota = calc_ota(r_cyl, l_cyl, wind_angle, r_boss, fiber_width);
+%turn angle into radians
+wind_angle = deg2rad(wind_angle);
+%find the apparent width of the fiber at the corner of the cylinder-
+%accounts for the wind angle
+width_relative = sec(wind_angle) * fiber_width;
+%calculate the number of fibers (F) that can fit around the circumference
+%of the cylinder
+num_fibers = 2 * pi * r_cyl / width_relative;
+%make this an integer (ceil rather than floor bc overlap better than gap)
+num_fibers = ceil(num_fibers)
+%guess an initial OTA using just the maximum possible OTA (known from
+%boss/cyl radius)
+ota = 2 * acos(r_boss / r_cyl)
+%calculate spiral angle (taken from helix parametric equation)
+spiral_angle = l_cyl * pi / (2 * r_cyl * cot(wind_angle))
+%calculate fiber steps (k) undertaken every 2OTA + 2spiral cycle.
+%total angle spun every cycle
+total_angle = mod(2 * (spiral_angle + ota), 2 * pi);
+%K = 2(OTA + Spiral) * F/2pi
+fiber_step = total_angle * num_fibers / (2 * pi);
+%turn this into an integer
+fiber_step = floor(fiber_step);
+%find step size for which relative prime rules apply
 fiber_step = find_fiber_step(fiber_step, num_fibers);
-ota = (fiber_step / num_fibers) * 2 * pi;
+%solve for ota with final calculated step size
+ota = (fiber_step * pi / num_fibers) - spiral_angle;
 return
 end
 
@@ -52,14 +101,14 @@ function fiber_step = find_fiber_step(fiber_step, num_fibers)
     fiber_step_inc = fiber_step;
     fiber_step_dec = fiber_step;
     while true
-        fiber_step_inc = fiber_step_inc + 1
+        fiber_step_inc = fiber_step_inc + 1;
         GCD_inc = gcd(fiber_step_inc, num_fibers);
         if GCD_inc == 1
             fiber_step = fiber_step_inc;
             return
         end
         
-        fiber_step_dec = fiber_step_dec - 1
+        fiber_step_dec = fiber_step_dec - 1;
         GCD_dec = gcd(fiber_step_dec, num_fibers);
         if GCD_dec == 1
             fiber_step = fiber_step_dec;

@@ -1,7 +1,7 @@
 draw_cyl_with_helix(3, 10, 45, 0, 0.1)
 %calc_ota(3, 10, 1, 45, 0.1)
 
-function draw_cyl_with_helix(r_cyl,l_cyl,wind_angle, r_boss, fiber_width)
+function draw_cyl_with_helix(r_cyl,l_cyl,wind_angle, r_axis, fiber_width)
 alpha = deg2rad(wind_angle); % wind angle, radians
 t_size = 1000;
 
@@ -33,7 +33,7 @@ x2(1) = x(t_size);
 %second point for OTA is the first point but the theta moves forward one
 %OTA
 r2(2) = r_cyl;
-theta2(2) = theta2(1) + calc_ota(r_cyl, l_cyl, wind_angle, r_boss, fiber_width);
+theta2(2) = theta2(1) + calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width);
 x2(2) = x2(1);
 
 
@@ -43,26 +43,26 @@ z = r .* sin(theta);
 y2 = r2 .* cos(theta2);
 z2 = r2 .* sin(theta2);
 
-r3_boss = zeros(32);
-theta_boss = linspace(0, 2 * pi, 32);
-x_boss = zeros(32);
+r3_axis = zeros(32);
+theta_axis = linspace(0, 2 * pi, 32);
+x_axis = zeros(32);
 
-r3_boss = r3_boss + r_boss;
-x_boss = x_boss + l_cyl;
-y_boss = r3_boss .* cos(theta_boss);
-z_boss = r3_boss .* sin(theta_boss);
+r3_axis = r3_axis + r_axis;
+x_axis = x_axis + l_cyl;
+y_axis = r3_axis .* cos(theta_axis);
+z_axis = r3_axis .* sin(theta_axis);
 
 plot3(x,y,z);
 axis equal
 hold on
 plot3(x2, y2, z2);
-plot3(x_boss, y_boss, z_boss);
+plot3(x_axis, y_axis, z_axis);
 [y_cyl,z_cyl,x_cyl] = cylinder(r_cyl);
 x_cyl = x_cyl * l_cyl;
 mesh(x_cyl,y_cyl,z_cyl);
 end
 
-function ota = calc_ota(r_cyl, l_cyl, wind_angle, r_boss, fiber_width);
+function ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width);
 %turn angle into radians
 wind_angle = deg2rad(wind_angle);
 %find the apparent width of the fiber at the corner of the cylinder-
@@ -74,8 +74,8 @@ num_fibers = 2 * pi * r_cyl / width_relative;
 %make this an integer (ceil rather than floor bc overlap better than gap)
 num_fibers = ceil(num_fibers)
 %guess an initial OTA using just the maximum possible OTA (known from
-%boss/cyl radius)
-ota = 2 * acos(r_boss / r_cyl)
+%axis/cyl radius)
+ota = 2 * acos(r_axis / r_cyl)
 %calculate spiral angle (taken from helix parametric equation)
 spiral_angle = l_cyl * pi / (2 * r_cyl * cot(wind_angle))
 %calculate fiber steps (k) undertaken every 2OTA + 2spiral cycle.

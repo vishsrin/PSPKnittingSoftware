@@ -1,5 +1,4 @@
-%draw_cyl_with_helix(2,15,69)
-
+draw_cyl_with_helix(2,15,69)
 
 function draw_cyl_with_helix(r_cyl,l_cyl,wind_angle)
 alpha = deg2rad(wind_angle); % wind angle, radians
@@ -39,31 +38,10 @@ num_fibers = ceil(num_fibers); %step 3: ceil F
 ota = 2 * acos(r_boss / r_cyl); %step 4: Initial angle guess at max possible
 fiber_step = floor((num_fibers / pi) * mod(((l_cyl * pi) / (2 * r_cyl * cot(wind_angle))), 2 * pi) + ota); %step 5: generate K value from ota guess
 fiber_step = find_fiber_step(fiber_step, num_fibers);
-ota = (fiber_step / num_fibers) * 2 * pi;
-return
+
+ota = (fiber_step / num_fibers) * 2 * pi
 end
 
 function fiber_step = find_fiber_step(fiber_step, num_fibers)
-    GCD = gcd(fiber_step, num_fibers);
-    if GCD == 0
-        return
-    end
-    
-    fiber_step_inc = fiber_step;
-    fiber_step_dec = fiber_step;
-    while true
-        fiber_step_inc = fiber_step_inc + 1
-        GCD_inc = gcd(fiber_step_inc, num_fibers);
-        if GCD_inc == 1
-            fiber_step = fiber_step_inc;
-            return
-        end
-        
-        fiber_step_dec = fiber_step_dec - 1
-        GCD_dec = gcd(fiber_step_dec, num_fibers);
-        if GCD_dec == 1
-            fiber_step = fiber_step_dec;
-            return
-        end
-    end
+
 end

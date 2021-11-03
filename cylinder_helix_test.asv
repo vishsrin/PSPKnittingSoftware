@@ -1,6 +1,6 @@
-draw_wind_pass(3, 10, 45, 1, 0.1)
+draw_wind_pass(3, 10, 45, 0, 0.1)
 %draw_cyl_with_helix(3, 10, 45, 0, 0.1)
-%calc_ota(3, 10, 45, 0, 0.1)
+%calc_ota(3, 10, 1, 45, 0.1)
 
 function theta_step = draw_wind_pass(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
 wind_angle = deg2rad(wind_angle); % wind angle, radians
@@ -16,12 +16,7 @@ r = zeros(size(t));
 theta_up = zeros(size(t));
 theta_down = zeros(size(t));
 x = zeros(size(t));
-r_cyl
-l_cyl
-wind_angle
-r_axis
-fiber_width
-ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
+ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width);
 
 for i = 1:t_size
     r(i) = r_cyl;
@@ -51,10 +46,8 @@ z_coord_up = r .* sin(theta_up);
 y_coord_down = r .* cos(theta_down);
 z_coord_down = r .* sin(theta_down);
 
-
-x_coord_ota
-y_coord_ota = r_coord_ota .* cos(theta_coord_ota)
-z_coord_ota = r_coord_ota .* sin(theta_coord_ota)
+y_coord_ota = r_coord_ota .* cos(theta_coord_ota);
+z_coord_ota = r_coord_ota .* sin(theta_coord_ota);
 
 plot3(x,y_coord_up,z_coord_up); % cylinder up path
 axis equal
@@ -131,6 +124,8 @@ mesh(x_cyl,y_cyl,z_cyl);
 end
 
 function ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width);
+%turn angle into radians
+wind_angle = deg2rad(wind_angle);
 %find the apparent width of the fiber at the corner of the cylinder-
 %accounts for the wind angle
 width_relative = sec(wind_angle) * fiber_width;
@@ -141,7 +136,7 @@ num_fibers = 2 * pi * r_cyl / width_relative;
 num_fibers = ceil(num_fibers)
 %guess an initial OTA using just the maximum possible OTA (known from
 %axis/cyl radius)
-ota = 2 * acos(r_axis / r_cyl);
+ota = 2 * acos(r_axis / r_cyl)
 %calculate spiral angle (taken from helix parametric equation)
 spiral_angle = l_cyl * pi / (2 * r_cyl * cot(wind_angle))
 %calculate fiber steps (k) undertaken every 2OTA + 2spiral cycle.

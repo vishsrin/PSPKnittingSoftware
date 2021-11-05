@@ -1,4 +1,4 @@
-draw_wind_pass(3, 10, 45, 1, 0.1)
+draw_wind_pass(3, 10, 45, 1, 0.5)
 %draw_cyl_with_helix(3, 10, 45, 0, 0.1)
 %calc_ota(3, 10, 45, 0, 0.1)
 
@@ -16,56 +16,77 @@ r = zeros(size(t));
 theta_up = zeros(size(t));
 theta_down = zeros(size(t));
 x = zeros(size(t));
-r_cyl
-l_cyl
-wind_angle
-r_axis
-fiber_width
+r_cyl;
+l_cyl;
+wind_angle;
+r_axis;
+fiber_width;
 ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
+theta_step = 0;
+num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width)
 
-for i = 1:t_size
-    r(i) = r_cyl;
-    theta_up(i) = (t(i) * pi) / (2 * r_cyl * cot(wind_angle));
-    theta_down(i) = theta_up(i) + ota;
-    x(i) = t(i);
+for p = 1:num_fibers
+    p;
+    theta_step;
+    for i = 1:t_size
+        r(i) = r_cyl;
+        theta_up(i) = (t(i) * pi) / (2 * r_cyl * cot(wind_angle)) + theta_step;
+        x(i) = t(i);
+    end
+    
+    r_coord_ota = zeros(2); %stores the rs needed to plot OTA line
+    theta_coord_ota = zeros(2); %stores thetas needed for OTA line
+    x_coord_ota = zeros(2); %stores xs for OTA
+    
+    %first point for OTA is last point from helix curve
+    r_coord_ota(1) = r_cyl;
+    theta_coord_ota(1) = theta_up(t_size);
+    x_coord_ota(1) = x(t_size);
+    
+    %second point for OTA is the first point but the theta moves forward one
+    %OTA
+    r_coord_ota(2) = r_cyl;
+    theta_coord_ota(2) = theta_up(t_size) + ota;
+    x_coord_ota(2) = x_coord_ota(1);
+    
+    for i = 1:t_size
+        n = t_size - i + 1;
+        theta_down(i) = (t(n) * pi) / (2 * r_cyl * cot(wind_angle)) + theta_coord_ota(2);
+    end
+    
+    y_coord_up = r .* cos(theta_up);
+    z_coord_up = r .* sin(theta_up);
+    
+    y_coord_down = r .* cos(theta_down);
+    z_coord_down = r .* sin(theta_down);
+    
+    y_coord_ota = r_coord_ota .* cos(theta_coord_ota);
+    z_coord_ota = r_coord_ota .* sin(theta_coord_ota);
+    
+    plot3(x,y_coord_up,z_coord_up); % cylinder up path
+    axis equal
+    hold on
+    plot3(x, y_coord_down, z_coord_down); % cylinder down path
+    plot3(x_coord_ota, y_coord_ota, z_coord_ota); % ota up path
+    
+    r_coord_ota(1) = r_cyl;
+    theta_coord_ota(1) = theta_down(1);
+    x_coord_ota(1) = x(1);
+    
+    r_coord_ota(2) = r_cyl;
+    theta_coord_ota(2) = theta_down(1) + ota;
+    x_coord_ota(2) = x_coord_ota(1);
+    
+    y_coord_ota = r_coord_ota .* cos(theta_coord_ota);
+    z_coord_ota = r_coord_ota .* sin(theta_coord_ota);
+    
+    plot3(x_coord_ota, y_coord_ota, z_coord_ota);
+    theta_step = theta_down(1) + ota;
 end
 
-r_coord_ota = zeros(2); %stores the rs needed to plot OTA line
-theta_coord_ota = zeros(2); %stores thetas needed for OTA line
-x_coord_ota = zeros(2); %stores xs for OTA
-
-%first point for OTA is last point from helix curve
-r_coord_ota(1) = r_cyl;
-theta_coord_ota(1) = theta_up(t_size);
-x_coord_ota(1) = x(t_size);
-
-%second point for OTA is the first point but the theta moves forward one
-%OTA
-r_coord_ota(2) = r_cyl;
-theta_coord_ota(2) = theta_down(t_size);
-x_coord_ota(2) = x_coord_ota(1);
-
-y_coord_up = r .* cos(theta_up);
-z_coord_up = r .* sin(theta_up);
-
-y_coord_down = r .* cos(theta_down);
-z_coord_down = r .* sin(theta_down);
-
-
-x_coord_ota
-y_coord_ota = r_coord_ota .* cos(theta_coord_ota)
-z_coord_ota = r_coord_ota .* sin(theta_coord_ota)
-
-plot3(x,y_coord_up,z_coord_up); % cylinder up path
-axis equal
-hold on
-plot3(x, y_coord_down, z_coord_down); % cylinder down path
-plot3(x_coord_ota, y_coord_ota, z_coord_ota); % ota up path
 [y_cyl,z_cyl,x_cyl] = cylinder(r_cyl); % creating cylinder object
 x_cyl = x_cyl * l_cyl; % scaling
 mesh(x_cyl,y_cyl,z_cyl);
-
-theta_step = theta_down(1) + ota;
 return
 end
 
@@ -104,7 +125,6 @@ r2(2) = r_cyl;
 theta2(2) = theta2(1) + calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width);
 x2(2) = x2(1);
 
-
 y = r .* cos(theta_up);
 z = r .* sin(theta_up);
 
@@ -130,20 +150,19 @@ x_cyl = x_cyl * l_cyl;
 mesh(x_cyl,y_cyl,z_cyl);
 end
 
-function ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width);
-%find the apparent width of the fiber at the corner of the cylinder-
-%accounts for the wind angle
+function num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width)
 width_relative = sec(wind_angle) * fiber_width;
-%calculate the number of fibers (F) that can fit around the circumference
-%of the cylinder
 num_fibers = 2 * pi * r_cyl / width_relative;
-%make this an integer (ceil rather than floor bc overlap better than gap)
-num_fibers = ceil(num_fibers)
+num_fibers = ceil(num_fibers);
+end
+
+function ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
+num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width);
 %guess an initial OTA using just the maximum possible OTA (known from
 %axis/cyl radius)
 ota = 2 * acos(r_axis / r_cyl);
 %calculate spiral angle (taken from helix parametric equation)
-spiral_angle = l_cyl * pi / (2 * r_cyl * cot(wind_angle))
+spiral_angle = l_cyl * pi / (2 * r_cyl * cot(wind_angle));
 %calculate fiber steps (k) undertaken every 2OTA + 2spiral cycle.
 %total angle spun every cycle
 total_angle = mod(2 * (spiral_angle + ota), 2 * pi);

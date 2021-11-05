@@ -1,4 +1,5 @@
-draw_wind_pass(3, 20, 45, 1, 0.5)
+draw_wind_pass(3, 10, 45, 1, 0.5)
+%ota = calc_ota_2(45);
 
 function theta_step = draw_wind_pass(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
 wind_angle = deg2rad(wind_angle); % wind angle, radians
@@ -19,10 +20,7 @@ l_cyl;
 wind_angle;
 r_axis;
 fiber_width;
-wind_angle = calc_wind_angle(r_cyl, l_cyl, wind_angle, fiber_width);
-ota = pi - (2 * wind_angle);
-
-
+ota = calc_ota_2(wind_angle)
 theta_step = 0;
 num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width)
 
@@ -95,45 +93,99 @@ mesh(x_cyl,y_cyl,z_cyl);
 return
 end
 
+function draw_cyl_with_helix(r_cyl,l_cyl,wind_angle, r_axis, fiber_width)
+alpha = deg2rad(wind_angle); % wind angle, radians
+t_size = 1000;
+
+%phi0 = 0; % starting phi
+%zeta = 0.5 * h / r;
+%theta0 = atan(1 / zeta); % starting theta
+%theta_span = theta0:0.01:(pi / 2); % theta span vectors
+
+t = linspace(0,l_cyl,t_size);
+r = zeros(size(t));
+theta_up = zeros(size(t));
+x = zeros(size(t));
+
+for i = 1:t_size
+    r(i) = r_cyl;
+    theta_up(i) = (t(i) * pi) / (2 * r_cyl * cot(alpha));
+    x(i) = t(i);
+end
+
+r2 = zeros(2); %stores the rs needed to plot OTA line
+theta2 = zeros(2); %stores thetas needed for OTA line
+x2 = zeros(2); %stores xs for OTA
+
+%first point for OTA is last point from helix curve
+r2(1) = r_cyl;
+theta2(1) = theta_up(t_size);
+x2(1) = x(t_size);
+
+%second point for OTA is the first point but the theta moves forward one
+%OTA
+r2(2) = r_cyl;
+theta2(2) = theta2(1) + calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width);
+x2(2) = x2(1);
+
+y = r .* cos(theta_up);
+z = r .* sin(theta_up);
+
+y2 = r2 .* cos(theta2);
+z2 = r2 .* sin(theta2);
+
+r3_axis = zeros(32);
+theta_axis = linspace(0, 2 * pi, 32);
+x_axis = zeros(32);
+
+r3_axis = r3_axis + r_axis;
+x_axis = x_axis + l_cyl;
+y_axis = r3_axis .* cos(theta_axis);
+z_axis = r3_axis .* sin(theta_axis);
+
+plot3(x,y,z);
+axis equal
+hold on
+plot3(x2, y2, z2);
+plot3(x_axis, y_axis, z_axis);
+[y_cyl,z_cyl,x_cyl] = cylinder(r_cyl);
+x_cyl = x_cyl * l_cyl;
+mesh(x_cyl,y_cyl,z_cyl);
+end
+
 function num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width)
 width_relative = sec(wind_angle) * fiber_width;
 num_fibers = 2 * pi * r_cyl / width_relative;
 num_fibers = ceil(num_fibers);
 end
 
-function new_theta = calc_wind_angle(r_cyl, l_cyl, wind_angle, fiber_width)
+function wind_angle = calc_wind_angle(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
+theta = wind_angle;
 theta_inc = 0.01;
-theta_plus = wind_angle;
+theta_plus = theta;
 theta_minus = theta_plus;
+new_theta;
+fiber_step;
+num_fibers;
 
-num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width);
-fiber_step = calc_fiber_step(r_cyl, l_cyl, wind_angle, fiber_width);
+fiber_step = calc_fiber_step(r_cyl, wind_angle, fiber_width);
 
-while (calc_step_prime(fiber_step, num_fibers))
-    num_fibers = calc_num_fibers(r_cyl, theta_plus, fiber_width);
-    fiber_step = calc_fiber_step(r_cyl, l_cyl, theta_plus, fiber_width);
+while (~calc_step_prime(fiber_step, num_fibers))
+    fiber_step = calc_fiber_step(r_cyl, theta_plus, fiber_width);
     theta_plus = theta_plus + theta_inc;
 end
 
-num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width);
-fiber_step = calc_fiber_step(r_cyl, l_cyl, wind_angle, fiber_width);
-
-while (calc_step_prime(fiber_step, num_fibers))
-    num_fibers = calc_num_fibers(r_cyl, theta_minus, fiber_width);
-    fiber_step = calc_fiber_step(r_cyl, l_cyl, theta_minus, fiber_width);
+while (~calc_step_prime(fiber_step, num_fibers))
+    fiber_step = calc_fiber_step(r_cyl, theta_minus, fiber_width);
     theta_minus = theta_minus - theta_inc;
 end
 
 if (theta_plus - wind_angle) > (wind_angle - theta_minus)
-    new_theta = theta_minus;
-else
-    new_theta = theta_plus;
+    new_theta = theta_minus
+
 end
 
-return
-end
-
-function fiber_step = calc_fiber_step(r_cyl, l_cyl, theta, fiber_width)
+function fiber_step = calc_fiber_step(r_cyl, theta, fiber_width)
 
 num_fibers = calc_num_fibers(r_cyl, theta, fiber_width);
 %guess an initial OTA using just the maximum possible OTA (known from

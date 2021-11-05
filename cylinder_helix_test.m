@@ -1,6 +1,5 @@
 draw_wind_pass(3, 10, 45, 1, 0.5)
-%draw_cyl_with_helix(3, 10, 45, 0, 0.1)
-%calc_ota(3, 10, 45, 0, 0.1)
+%calc_ota(3, 10, 45, 1, 0.5)
 
 function theta_step = draw_wind_pass(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
 wind_angle = deg2rad(wind_angle); % wind angle, radians
@@ -21,16 +20,16 @@ l_cyl;
 wind_angle;
 r_axis;
 fiber_width;
-ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
+ota = calc_ota(r_cyl, l_cyl, wind_angle, r_axis, fiber_width);
 theta_step = 0;
 num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width)
 
 for p = 1:num_fibers
     p;
     theta_step;
-    for i = 1:t_size
+    for i = 1:t_size % drawing #fibers times
         r(i) = r_cyl;
-        theta_up(i) = (t(i) * pi) / (2 * r_cyl * cot(wind_angle)) + theta_step;
+        theta_up(i) = (t(i) * pi) / (2 * r_cyl * cot(wind_angle)) + theta_step; %theta_up values
         x(i) = t(i);
     end
     
@@ -49,6 +48,8 @@ for p = 1:num_fibers
     theta_coord_ota(2) = theta_up(t_size) + ota;
     x_coord_ota(2) = x_coord_ota(1);
     
+    % since theta_down pass moves the other way, array must be indexed
+    % backwards
     for i = 1:t_size
         n = t_size - i + 1;
         theta_down(i) = (t(n) * pi) / (2 * r_cyl * cot(wind_angle)) + theta_coord_ota(2);
@@ -69,6 +70,7 @@ for p = 1:num_fibers
     plot3(x, y_coord_down, z_coord_down); % cylinder down path
     plot3(x_coord_ota, y_coord_ota, z_coord_ota); % ota up path
     
+    % re-assigning OTA values for down-OTA
     r_coord_ota(1) = r_cyl;
     theta_coord_ota(1) = theta_down(1);
     x_coord_ota(1) = x(1);
@@ -80,13 +82,14 @@ for p = 1:num_fibers
     y_coord_ota = r_coord_ota .* cos(theta_coord_ota);
     z_coord_ota = r_coord_ota .* sin(theta_coord_ota);
     
-    plot3(x_coord_ota, y_coord_ota, z_coord_ota);
+    plot3(x_coord_ota, y_coord_ota, z_coord_ota); % OTA down path
     theta_step = theta_down(1) + ota;
 end
 
 [y_cyl,z_cyl,x_cyl] = cylinder(r_cyl); % creating cylinder object
 x_cyl = x_cyl * l_cyl; % scaling
 mesh(x_cyl,y_cyl,z_cyl);
+
 return
 end
 

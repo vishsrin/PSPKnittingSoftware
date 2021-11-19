@@ -10,7 +10,7 @@ axis equal
 hold on
 
 path_coordinates = draw_one_path(r_cyl, l_cyl, wind_angle, r_axis, fiber_width, 0);
-
+graph_path(path_coordinates);
 
 end
 
@@ -65,7 +65,6 @@ path_coordinates_x = [x_up, x_coord_ota, x_down, x_coord_ota_2];
 % first column r's, second column thetas, third column x's
 path_coordinates = [path_coordinates_r;path_coordinates_theta;path_coordinates_x];
 
-graph_path(path_coordinates);
 end
 
 function cartesian_coordinates = graph_path(path_coordinates)
@@ -77,21 +76,18 @@ max(rs)
 max(thetas)
 max(xs)
 
-for i = 1 : size(xs)
 
-ys(i) = rs(i) .* cos(thetas(i));
-zs(i) = rs(i) .* sin(thetas(i));
+for q = 1 : numel(xs)
+    fprintf("yoyoyoyo");
+ys(q) = rs(q) .* cos(thetas(q));
+zs(q) = rs(q) .* sin(thetas(q));
 end
 
 
 size(xs)
-max(xs)
 size(ys)
-max(ys)
 size(zs)
-max(zs)
 
-plot3(xs, ys, zs);
 hold on
 
 return

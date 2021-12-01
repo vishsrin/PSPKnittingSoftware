@@ -1,4 +1,4 @@
-draw_wind_pass(3, 20, 45, 1, 0.5)
+draw_wind_pass(3, 20, 45, 1, 01)
 
 function theta_step = draw_wind_pass(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
 wind_angle = deg2rad(wind_angle); % wind angle, radians
@@ -9,7 +9,7 @@ t_size = 1000;
 %theta0 = atan(1 / zeta); % starting theta
 %theta_span = theta0:0.01:(pi / 2); % theta span vectors
 
-t = linspace(0,l_cyl,t_size);
+t = linspace(0,l_cyl,t_size); 
 r = zeros(size(t));
 theta_up = zeros(size(t));
 theta_down = zeros(size(t));

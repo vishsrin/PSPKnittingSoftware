@@ -1,4 +1,4 @@
-draw_full_path(1, 10, 45, 3, 0.1);
+draw_full_path(1, 10, 45, 3, 1);
 
 function draw_full_path(r_cyl, l_cyl, wind_angle, r_axis, fiber_width)
 wind_angle = deg2rad(wind_angle);
@@ -25,7 +25,7 @@ x_up = t;
 x_down = t;
 
 wind_angle = calc_wind_angle(r_cyl, l_cyl, wind_angle, fiber_width);
-wind_angle_down = pi - wind_angle;
+wind_angle_down = wind_angle;
 ota = pi - (2 * wind_angle);
 
 %populate wind-up vectors
@@ -78,16 +78,11 @@ max(xs)
 
 
 for q = 1 : numel(xs)
-    fprintf("yoyoyoyo");
 ys(q) = rs(q) .* cos(thetas(q));
 zs(q) = rs(q) .* sin(thetas(q));
 end
 
-
-size(xs)
-size(ys)
-size(zs)
-
+plot3(xs,ys,zs);
 hold on
 
 return

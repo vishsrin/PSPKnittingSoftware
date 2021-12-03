@@ -1,4 +1,4 @@
-draw_full_path(3, 20, 33, 1);
+draw_full_path(3, 20, 25, 1);
 
 function draw_full_path(r_cyl, l_cyl, wind_angle, fiber_width)
 wind_angle = deg2rad(wind_angle);
@@ -16,7 +16,7 @@ step_angle = path_coordinates(2, length(path_coordinates(2, :)));
 
 num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width);
 
-for i = 1 : (num_fibers * 1)
+for i = 1 : (num_fibers)
 path_coordinates = horzcat(path_coordinates, draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, i * step_angle));
 end
 graph_path(path_coordinates);
@@ -129,7 +129,6 @@ while (~calc_step_prime(fiber_step, num_fibers))
     theta_plus = theta_plus + theta_inc
 end
 
-%this ensures the theta-minus half actually gets called
 num_fibers = temp_num_fibers;
 fiber_step = temp_fiber_step;
 
@@ -144,13 +143,13 @@ end
 %pick the relatively prime wind angle closest to the original and return
 if (theta_plus - wind_angle) > (wind_angle - theta_minus)
     new_theta = theta_minus;
-    fprintf("\ni have chosen theta_minus\n");
+    fprintf("\ntheta\n",);
 else
     new_theta = theta_plus;
-    fprintf("\ni have chosen theta_plus\n");
+    fprintf("\ntheta_minus\n");
 end
 
-fprintf("\nnum_fibers: %d, fiber_step: %d, new_theta: %.2d", num_fibers, fiber_step, (new_theta * 180 / pi));
+fprintf("\nnum_fibers: %d, fiber_step: %d, new_theta: %d", num_fibers, fiber_step, (new_theta * 180 / pi));
 
 return
 end

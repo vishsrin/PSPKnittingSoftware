@@ -18,11 +18,15 @@ num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width);
 
 for i = 1 : (num_fibers * 1)
 path_coordinates = horzcat(path_coordinates, draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, i * step_angle));
+
+for i = 1 : 5
+path_coordinates = horzcat(path_coordinates, draw_one_path(r_cyl, l_cyl, wind_angle, r_axis, fiber_width, i * step_angle));
+
 end
 graph_path(path_coordinates);
 
 end
-
+end
 
 function path_coordinates = draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, starting_offset_angle)
 t_size = 1000;

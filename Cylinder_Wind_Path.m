@@ -9,22 +9,22 @@ mesh(x_cyl,y_cyl,z_cyl);
 axis equal
 hold on
 
-path_coordinates = draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, 0);
-fprintf("heres the number\n");
-fprintf("there was the number\n");
-step_angle = path_coordinates(2, length(path_coordinates(2, :)));
 
 num_fibers = calc_num_fibers(r_cyl, wind_angle, fiber_width);
 
-for i = 1 : (num_fibers * 1)
-path_coordinates = horzcat(path_coordinates, draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, i * step_angle));
+path_coordinates = draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, 0, num_fibers);
+
+step_angle = path_coordinates(2, length(path_coordinates(2, :)));
+
+for i = 1 : 1
+path_coordinates = horzcat(path_coordinates, draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, i * step_angle, num_fibers));
 
 graph_path(path_coordinates);
 
 end
 end
 
-function path_coordinates = draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, starting_offset_angle)
+function path_coordinates = draw_one_path(r_cyl, l_cyl, wind_angle, fiber_width, starting_offset_angle, num_fibers)
 t_size = 1000;
 t = linspace(0, l_cyl, t_size);
 r = zeros (size(t));
@@ -36,6 +36,7 @@ x_down = t;
 wind_angle = calc_wind_angle(r_cyl, l_cyl, wind_angle, fiber_width)
 wind_angle_down = wind_angle;
 ota = pi - (2 * wind_angle);
+arc_width = (2 * pi / num_fibers)
 
 %populate wind-up vectors
 for i = 1 : t_size
@@ -48,10 +49,25 @@ r_coord_ota = zeros(2);
 theta_coord_ota = zeros(2);
 x_coord_ota = zeros(2);
 
+%initialize path-start marker
+r_coord_marker = zeros(2);
+theta_coord_marker = zeros(2);
+x_coord_marker = zeros(2);
+
 %populate OTA-top vectors
 r_coord_ota = [r_cyl r_cyl];
 theta_coord_ota = [theta_up(t_size) theta_up(t_size) + ota];
 x_coord_ota = [x_up(t_size) x_up(t_size)];
+
+%create path-start marker
+r_coord_marker = [r_cyl * (2 / 3) r_cyl];
+theta_coord_marker = [theta_up(1) theta_up(1)];
+x_coord_marker = [x_up(1) x_up(1)];
+
+%create fiber_width visualizer
+r_coord_width = [r_cyl r_cyl];
+theta_coord_width = [theta_up(1) - arc_width theta_up(1) + arc_width];
+x_coord_width = [x_up(1) x_up(1)];
 
 %populate wind-down vectors
 for i = 1 : t_size
@@ -67,9 +83,9 @@ theta_coord_ota_2(2) = theta_coord_ota_2(1) + ota;
 
 x_coord_ota_2 = [x_down(t_size) x_down(t_size)];
 
-path_coordinates_r = [r, r_coord_ota, r, r_coord_ota_2];
-path_coordinates_theta = [theta_up, theta_coord_ota, theta_down, theta_coord_ota_2];
-path_coordinates_x = [x_up, x_coord_ota, x_down, x_coord_ota_2];
+path_coordinates_r = [r_coord_marker, r_coord_width, r, r_coord_ota, r, r_coord_ota_2];
+path_coordinates_theta = [theta_coord_marker, theta_coord_width, theta_up, theta_coord_ota, theta_down, theta_coord_ota_2];
+path_coordinates_x = [x_coord_marker, x_coord_width, x_up, x_coord_ota, x_down, x_coord_ota_2];
 
 % first column r's, second column thetas, third column x's
 path_coordinates = [path_coordinates_r;path_coordinates_theta;path_coordinates_x];
@@ -101,7 +117,7 @@ end
 %use the initial desired wind angle to determine a wind angle that
 %satisfies 'relative primity'
 function new_theta = calc_wind_angle(r_cyl, l_cyl, wind_angle, fiber_width)
-theta_inc = 0.01;
+theta_inc = 0.001;
 theta_plus = wind_angle;
 theta_minus = theta_plus;
 
